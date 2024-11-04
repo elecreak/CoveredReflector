@@ -6,11 +6,11 @@ bool WriteBootStartUpToRegedit(){
     char filepath[128];
     HKEY hkey;
     GetModuleFileNameA(NULL, filepath, 128);
-    ::RegCreateKeyExA(HKEY_CURRENT_USER,"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+    RegCreateKeyExA(HKEY_CURRENT_USER,"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
         0,NULL,REG_OPTION_NON_VOLATILE,KEY_WRITE,NULL,&hkey,NULL);
-    ::RegSetValueExA(hkey,APP_NAME_EN,0,REG_SZ,reinterpret_cast<LPBYTE>((filepath)),
+    RegSetValueExA(hkey,APP_NAME_EN,0,REG_SZ,reinterpret_cast<LPBYTE>((filepath)),
         sizeof(std::wstring::value_type) * (_tcslen(filepath) + 1));
-    ::RegCloseKey(hkey);//::RegDeleteKeyExW
+    RegCloseKey(hkey);//RegDeleteKeyExW
     return true;
 }
 HWND main_hwnd;
@@ -20,8 +20,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     WNDCLASSA wndclass;
     HWND handle = FindWindowA(NULL, APP_NAME_EN);
     if (handle != NULL){
-        MessageBoxA(NULL,"Application is already running", APP_NAME_EN, MB_ICONERROR);
-        return 0;
+        //MessageBoxA(NULL,"Application is already running", APP_NAME_EN, MB_ICONERROR);
+        //return 0;
+        SendMessage(handle, WM_DESTROY, 0, 0);
     }
     wndclass.style = CS_HREDRAW | CS_VREDRAW;
     wndclass.lpfnWndProc = MainWndProc;

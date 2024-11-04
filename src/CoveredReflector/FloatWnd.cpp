@@ -131,6 +131,7 @@ LRESULT CALLBACK FloatWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             }
             break;*/
         case WM_DESTROY:
+            free(p_fltwnd);
             KillTimer(hwnd, 1);
             PostQuitMessage(0);
             break;

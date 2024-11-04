@@ -23,6 +23,9 @@
 #define TEXT_EMAIL (LPCSTR)"elecreak@outlook.com"
 #define BIGFONT_SIZE 16 
 #define SMALLFONT_SIZE 12 
+#define REGISTRY_PATH "Software\\ElecreakGroup\\CoveredReflector\\Settings"
+#define VALUE_NAME "HotkeySetting"
+
 typedef struct {
     UINT uModifiers;
     UINT uVirtKey;

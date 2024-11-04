@@ -1,7 +1,7 @@
 #include "TraySet.hpp"
 
 HotkeySetting g_hotkeySetting = { MOD_CONTROL | MOD_ALT, 'D' };
-void SaveHotkeySettingToFile(const HotkeySetting& setting, const wchar_t* filename) {
+/*void SaveHotkeySettingToFile(const HotkeySetting& setting, const wchar_t* filename) {
     std::ofstream file(filename, std::ios::binary);
     if (file.is_open()) {
         file.write(reinterpret_cast<const char*>(&setting), sizeof(HotkeySetting));
@@ -13,6 +13,41 @@ void LoadHotkeySettingFromFile(const HotkeySetting& setting, const wchar_t* file
     if (file.is_open()) {
         file.read((char*)(&setting), sizeof(HotkeySetting));
         file.close();
+    }
+}*/
+void SaveHotkeySettingToRegistry(const HotkeySetting& setting) {
+    HKEY hKey;
+    LONG rs = RegCreateKeyExA(HKEY_CURRENT_USER, REGISTRY_PATH, 0,
+        NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL);
+    if (rs == ERROR_SUCCESS) {
+        rs = RegSetValueEx(hKey, VALUE_NAME, 0, REG_BINARY,
+            reinterpret_cast<const BYTE*>(&setting), sizeof(setting));
+        RegCloseKey(hKey);
+    }
+    if (rs != ERROR_SUCCESS) {
+        ;
+    }
+}
+void LoadHotkeySettingFromRegistry(HotkeySetting& setting) {
+    HKEY hKey;
+    DWORD dataType;
+    DWORD dataSize = sizeof(setting);
+    BYTE dataBuffer[sizeof(setting)];
+    LONG rs = RegOpenKeyEx(HKEY_CURRENT_USER, REGISTRY_PATH, 0,
+        KEY_READ, &hKey);
+    if (rs == ERROR_SUCCESS) {
+        rs = RegQueryValueEx(hKey, VALUE_NAME, NULL, 
+            &dataType, dataBuffer, &dataSize);
+        if (rs == ERROR_SUCCESS && dataType == REG_BINARY && dataSize == sizeof(setting)) {
+            memcpy(&setting, dataBuffer, sizeof(setting));
+        }
+        else {
+            ;
+        }
+        RegCloseKey(hKey);
+    }
+    else {
+        ;
     }
 }
 LRESULT CALLBACK SettingsWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -40,7 +75,8 @@ LRESULT CALLBACK SettingsWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         switch (LOWORD(wParam)) {
         case 2: // save button click
             g_hotkeySetting = newHotkeySetting;
-            SaveHotkeySettingToFile(g_hotkeySetting, L"hotkey.settings");
+            //SaveHotkeySettingToFile(g_hotkeySetting, L"hotkey.settings");
+            SaveHotkeySettingToRegistry(g_hotkeySetting);
             break;
         }
         break;
@@ -254,7 +290,8 @@ void CaptureAndStartShow(HWND hwnd) {
 }
 HMENU hMenu;
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    LoadHotkeySettingFromFile(g_hotkeySetting, L"hotkey.settings");
+    //LoadHotkeySettingFromFile(g_hotkeySetting, L"hotkey.settings");
+    LoadHotkeySettingFromRegistry(g_hotkeySetting);
         HINSTANCE hinstance = (HINSTANCE)GetWindowLongPtrA(hwnd, GWLP_HINSTANCE);
     static NOTIFYICONDATAA nid;
     UINT WM_TASKBARCREATED;
